@@ -1,6 +1,9 @@
 import json
 import csv
 from pathlib import Path
+from logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def save_json(data, filepath: str) -> None:
@@ -13,13 +16,15 @@ def save_json(data, filepath: str) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
+    logger.info(f"JSON data saved to {filepath}")
+
 
 def save_csv(data: list, filepath: str) -> None:
     """
     Save list of dictionaries to a CSV file.
     """
     if not data:
-        print("No data to save.")
+        logger.warning("No data to save to CSV")
         return
 
     path = Path(filepath)
@@ -29,3 +34,5 @@ def save_csv(data: list, filepath: str) -> None:
         writer = csv.DictWriter(f, fieldnames=data[0].keys())
         writer.writeheader()
         writer.writerows(data)
+
+    logger.info(f"CSV data saved to {filepath}")

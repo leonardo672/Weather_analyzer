@@ -1,13 +1,20 @@
+import time
 import requests
+import os
+from dotenv import load_dotenv
+from logger import get_logger
 
-API_KEY = "66822a805f6c28b287931c9b5cb0febb"
+load_dotenv()
+
+logger = get_logger(__name__)
+
+API_KEY = os.getenv("OPENWEATHER_API_KEY")
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 
-def fetch_weather(city: str) -> dict | None:
+def fetch_weather(city: str, retries: int = 3, delay: int = 2) -> dict | None:
     """
-    Fetch weather data for a single city.
-    Returns JSON dict if successful, otherwise None.
+    Fetch weather data for a city with retry logic.
     """
     params = {
         "q": city,
@@ -15,10 +22,26 @@ def fetch_weather(city: str) -> dict | None:
         "units": "metric"
     }
 
-    response = requests.get(BASE_URL, params=params)
+    for attempt in range(1, retries + 1):
+        try:
+            response = requests.get(BASE_URL, params=params, timeout=10)
 
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error fetching data for {city}: {response.status_code}")
-        return None
+            if response.status_code == 200:
+                logger.info(f"Weather data fetched for {city}")
+                return response.json()
+
+            logger.warning(
+                f"Attempt {attempt}/{retries} failed for {city} "
+                f"(status {response.status_code})"
+            )
+
+        except requests.RequestException as e:
+            logger.error(
+                f"Attempt {attempt}/{retries} error for {city}: {e}"
+            )
+
+        if attempt < retries:
+            time.sleep(delay)
+
+    logger.error(f"All retry attempts failed for {city}")
+    return None
