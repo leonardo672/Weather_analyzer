@@ -20,7 +20,7 @@ def job():
 
 # Schedule the job
 # run every day at 06:20
-schedule.every().day.at("17:38").do(job)
+schedule.every().day.at("17:28").do(job)
 
 # Alternative:
 # schedule.every(1).hours.do(job)
