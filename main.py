@@ -1,7 +1,7 @@
 import argparse
 from fetch_weather import fetch_weather
 from process_data import process_weather_data
-from utils import save_json, save_csv
+from utils import save_json_history, append_csv_history
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -21,14 +21,14 @@ def parse_args():
 
     parser.add_argument(
         "--output",
-        default="data/weather_summary.csv",
-        help="Path to output CSV file"
+        default="data/history/weather_summary.csv",
+        help="Path to output CSV file (historical)"
     )
 
     parser.add_argument(
         "--raw-output",
-        default="data/raw_weather.json",
-        help="Path to raw JSON output file"
+        default="data/history/raw",
+        help="Folder path to raw JSON output files (historical)"
     )
 
     return parser.parse_args()
@@ -45,8 +45,8 @@ def main(cities=None, output=None, raw_output=None):
         output = args.output
         raw_output = args.raw_output
     else:
-        output = output or "data/weather_summary.csv"
-        raw_output = raw_output or "data/raw_weather.json"
+        output = output or "data/history/weather_summary.csv"
+        raw_output = raw_output or "data/history/raw"
 
     logger.info("Weather pipeline started")
 
@@ -60,10 +60,16 @@ def main(cities=None, output=None, raw_output=None):
         else:
             logger.warning(f"No data received for {city}")
 
-    save_json(raw_weather_data, raw_output)
+    # Save raw JSON with timestamp for history
+    raw_file = save_json_history(raw_weather_data, raw_output)
+    logger.info(f"Raw JSON saved: {raw_file}")
 
+    # Process data
     processed_data = process_weather_data(raw_weather_data)
-    save_csv(processed_data, output)
+
+    # Append processed CSV to historical CSV
+    append_csv_history(processed_data, output)
+    logger.info("Processed data appended to historical CSV")
 
     logger.info("Weather data pipeline completed successfully")
 
