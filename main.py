@@ -1,7 +1,8 @@
 import argparse
 from fetch_weather import fetch_weather
 from process_data import process_weather_data
-from utils import save_json_history, append_csv_history
+from utils import save_json_history
+from db.insert_weather import insert_weather_records
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -9,7 +10,7 @@ logger = get_logger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Weather data pipeline using OpenWeatherMap API"
+        description="Weather data pipeline (API → PostgreSQL)"
     )
 
     parser.add_argument(
@@ -20,21 +21,15 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--output",
-        default="data/history/weather_summary.csv",
-        help="Path to output CSV file (historical)"
-    )
-
-    parser.add_argument(
         "--raw-output",
         default="data/history/raw",
-        help="Folder path to raw JSON output files (historical)"
+        help="Folder path to raw JSON output files (optional archive)"
     )
 
     return parser.parse_args()
 
 
-def main(cities=None, output=None, raw_output=None):
+def main(cities=None, raw_output=None):
     """
     Main weather data pipeline.
     Can be called from CLI or programmatically (scheduler).
@@ -42,10 +37,8 @@ def main(cities=None, output=None, raw_output=None):
     if cities is None:
         args = parse_args()
         cities = args.cities
-        output = args.output
         raw_output = args.raw_output
     else:
-        output = output or "data/history/weather_summary.csv"
         raw_output = raw_output or "data/history/raw"
 
     logger.info("Weather pipeline started")
@@ -60,18 +53,22 @@ def main(cities=None, output=None, raw_output=None):
         else:
             logger.warning(f"No data received for {city}")
 
-    # Save raw JSON with timestamp for history
-    raw_file = save_json_history(raw_weather_data, raw_output)
-    logger.info(f"Raw JSON saved: {raw_file}")
+    if not raw_weather_data:
+        logger.warning("No weather data fetched — pipeline stopped")
+        return
 
-    # Process data
+    # Optional: save raw JSON snapshot (history / debugging)
+    raw_file = save_json_history(raw_weather_data, raw_output)
+    logger.info(f"Raw JSON snapshot saved: {raw_file}")
+
+    # Process API data
     processed_data = process_weather_data(raw_weather_data)
 
-    # Append processed CSV to historical CSV
-    append_csv_history(processed_data, output)
-    logger.info("Processed data appended to historical CSV")
+    # Insert directly into PostgreSQL
+    inserted = insert_weather_records(processed_data)
+    logger.info(f"{inserted} records inserted into PostgreSQL")
 
-    logger.info("Weather data pipeline completed successfully")
+    logger.info("Weather pipeline completed successfully")
 
 
 if __name__ == "__main__":
