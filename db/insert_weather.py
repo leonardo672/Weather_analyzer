@@ -1,13 +1,10 @@
 import os
-import csv
 import psycopg2
 from dotenv import load_dotenv
-from pathlib import Path
-from weather_analyzer.logger import get_logger
+from logger import get_logger
 
 load_dotenv()
 logger = get_logger(__name__)
-
 
 DB_CONFIG = {
     "host": os.getenv("DB_HOST"),
@@ -17,26 +14,27 @@ DB_CONFIG = {
     "password": os.getenv("DB_PASSWORD"),
 }
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-CSV_FILE = BASE_DIR / "data" / "history" / "weather_summary.csv"
 
+def insert_weather_records(records: list[dict]) -> int:
+    """
+    Insert processed weather records into PostgreSQL.
+    Uses ON CONFLICT DO NOTHING to prevent duplicates.
+    """
+    if not records:
+        logger.warning("No records to insert into DB")
+        return 0
 
-def load_csv():
-    logger.info("Connecting to PostgreSQL")
     conn = psycopg2.connect(**DB_CONFIG)
     cur = conn.cursor()
 
-    with open(CSV_FILE, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        rows = list(reader)
+    inserted = 0
 
-    logger.info(f"Loading {len(rows)} rows into database")
-
-    for row in rows:
+    for row in records:
         cur.execute(
             """
             INSERT INTO weather_summary (city, temperature, humidity, fetched_at)
             VALUES (%s, %s, %s, %s)
+            ON CONFLICT (city, fetched_at) DO NOTHING
             """,
             (
                 row["city"],
@@ -46,12 +44,12 @@ def load_csv():
             ),
         )
 
+        if cur.rowcount > 0:
+            inserted += 1
+
     conn.commit()
     cur.close()
     conn.close()
 
-    logger.info("CSV successfully loaded into PostgreSQL")
-
-
-if __name__ == "__main__":
-    load_csv()
+    logger.info(f"{inserted} new records inserted into PostgreSQL")
+    return inserted

@@ -1,4 +1,5 @@
 from logger import get_logger
+from datetime import datetime
 
 logger = get_logger(__name__)
 
@@ -8,6 +9,7 @@ def process_weather_data(weather_data: list) -> list:
     Convert raw OpenWeatherMap JSON data into a clean summary.
     """
     processed = []
+    fetched_at = datetime.utcnow()
 
     for item in weather_data:
         if item is None:
@@ -25,9 +27,10 @@ def process_weather_data(weather_data: list) -> list:
         humidity = main.get("humidity")
 
         processed.append({
-            "city": city,
-            "temperature": temperature,
-            "humidity": humidity
+            "city": item["name"],
+            "temperature": item["main"]["temp"],
+            "humidity": item["main"]["humidity"],
+            "fetched_at": fetched_at,
         })
 
     return processed
