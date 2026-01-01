@@ -1,4 +1,4 @@
-from process_data import process_weather_data
+from weather_analyzer.process_data import process_weather_data
 
 
 def test_process_weather_data_valid():

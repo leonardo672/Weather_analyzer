@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from utils import save_json
+from weather_analyzer.utils import save_json
 
 
 def test_save_json_creates_file(tmp_path):

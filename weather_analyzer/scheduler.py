@@ -4,13 +4,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-from main import main
-from plot_trends_postgres import (
+from weather_analyzer.main import main
+from weather_analyzer.plotting.plot_trends_postgres import (
     fetch_weather_data,
     compute_trends,
     plot_temperature_trends
 )
-from logger import get_logger
+from weather_analyzer.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -48,7 +48,11 @@ def job():
         # 5️⃣ Run plot_trends.py USING VENV PYTHON
         logger.info("Running plot_trends.py (city temperature over time)")
         subprocess.run(
-            [sys.executable, "plot_trends.py"],
+            [
+                sys.executable,
+                "-m",
+                "weather_analyzer.plotting.plot_trends",
+            ],
             check=True
         )
 
@@ -58,7 +62,7 @@ def job():
         logger.exception("Scheduled job failed")
 
 
-schedule.every().day.at("17:42").do(job)
+schedule.every().day.at("05:05").do(job)
 # schedule.every(10).minutes.do(job)
 
 logger.info("Scheduler started. Waiting for jobs...")
