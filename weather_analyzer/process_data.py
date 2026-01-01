@@ -1,4 +1,4 @@
-from logger import get_logger
+from weather_analyzer.logger import get_logger
 from datetime import datetime
 
 logger = get_logger(__name__)

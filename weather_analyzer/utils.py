@@ -2,7 +2,7 @@ import json
 import csv
 from pathlib import Path
 from datetime import datetime
-from logger import get_logger
+from weather_analyzer.logger import get_logger
 
 logger = get_logger(__name__)
 

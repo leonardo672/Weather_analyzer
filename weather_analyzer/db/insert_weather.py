@@ -1,7 +1,7 @@
 import os
 import psycopg2
 from dotenv import load_dotenv
-from logger import get_logger
+from weather_analyzer.logger import get_logger
 
 load_dotenv()
 logger = get_logger(__name__)

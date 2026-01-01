@@ -1,9 +1,9 @@
 import argparse
-from fetch_weather import fetch_weather
-from process_data import process_weather_data
-from utils import save_json_history
-from db.insert_weather import insert_weather_records
-from logger import get_logger
+from weather_analyzer.fetch_weather import fetch_weather
+from weather_analyzer.process_data import process_weather_data
+from weather_analyzer.utils import save_json_history
+from weather_analyzer.db.insert_weather import insert_weather_records
+from weather_analyzer.logger import get_logger
 
 logger = get_logger(__name__)
 

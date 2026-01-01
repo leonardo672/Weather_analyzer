@@ -2,7 +2,7 @@ import pandas as pd
 import psycopg2
 import matplotlib.pyplot as plt
 from pathlib import Path
-from logger import get_logger
+from weather_analyzer.logger import get_logger
 from dotenv import load_dotenv
 import os
 
