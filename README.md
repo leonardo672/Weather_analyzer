@@ -52,9 +52,7 @@ DB_PASSWORD=pass
 ### ▶️ Run Commands
 #### 🔹One-off pipeline (manual run)
 ```
-python -m weather_analyzer.main \
-  --cities Stockholm London "New York" \
-  --raw-output data/history/raw
+python -m weather_analyzer.main --cities Stockholm London "New York" --raw-output data/history/raw
 ```
 What it does:
 - Fetches weather data
