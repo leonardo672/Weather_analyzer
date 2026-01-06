@@ -106,11 +106,9 @@ docker-compose up --build
 homams/weather_analyzer:latest
 ```
 Secrets required:
--
 ```
 DOCKER_USERNAME
 ```
--
 ```
 DOCKERHUB_TOKEN
 ```
