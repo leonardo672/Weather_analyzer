@@ -50,7 +50,7 @@ DB_PASSWORD=pass
 ```
 
 ### ▶️ Run Commands
-####🔹One-off pipeline (manual run)
+#### 🔹One-off pipeline (manual run)
 ```
 python -m weather_analyzer.main \
   --cities Stockholm London "New York" \
@@ -61,7 +61,7 @@ What it does:
 - Inserts into PostgreSQL
 - Saves optional raw JSON snapshots
 
-####🔹 Automated scheduler
+#### 🔹 Automated scheduler
 ```
 python -m weather_analyzer.scheduler
 ```
@@ -75,7 +75,7 @@ Outputs:
 - plots/temperature.png
 - plots/temperature_trends_<city>.png
 
-####🔹 Run analytics & plotting manually
+#### 🔹 Run analytics & plotting manually
 ```
 python -m weather_analyzer.plotting.plot_trends_postgres
 ```
