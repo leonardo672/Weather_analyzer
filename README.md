@@ -2,8 +2,6 @@
 
 A production-ready **weather data pipeline** that fetches live weather data, stores it in PostgreSQL, performs analytics, and generates temperature trend visualizations automatically or on a schedule.
 
----
-
 ## 🔧 Features
 
 - Fetches real-time weather data from OpenWeather API  
@@ -16,8 +14,6 @@ A production-ready **weather data pipeline** that fetches live weather data, sto
 - GitHub Actions → Docker Hub image publishing  
 - Unit-tested core logic (pytest)
 
----
-
 ## 🧱 Tech Stack
 
 - **Python 3.11**
@@ -27,8 +23,6 @@ A production-ready **weather data pipeline** that fetches live weather data, sto
 - **Docker / Docker Compose**
 - **pytest**
 - **GitHub Actions (CI/CD)**
-
----
 
 ## ⚙️ Setup
 
