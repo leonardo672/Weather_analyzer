@@ -1,47 +1,56 @@
 import time
 import requests
-import os
-from dotenv import load_dotenv
 from weather_analyzer.logger import get_logger
-
-load_dotenv()
+from weather_analyzer.config.settings import settings
 
 logger = get_logger(__name__)
 
-API_KEY = os.getenv("OPENWEATHER_API_KEY")
-BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
+def fetch_weather(city: str) -> dict | None:
+    """
+    Fetch weather data for a city with robust retry logic.
+    Uses centralized settings for retries, timeouts, and API config.
+    Returns the JSON response or None if all retries fail.
+    """
 
-def fetch_weather(city: str, retries: int = 3, delay: int = 2) -> dict | None:
-    """
-    Fetch weather data for a city with retry logic.
-    """
     params = {
         "q": city,
-        "appid": API_KEY,
-        "units": "metric"
+        "appid": settings.WEATHER_API_KEY,
+        "units": settings.UNITS
     }
 
-    for attempt in range(1, retries + 1):
+    for attempt in range(1, settings.API_RETRIES + 1):
         try:
-            response = requests.get(BASE_URL, params=params, timeout=10)
+            response = requests.get(
+                settings.WEATHER_API_URL,
+                params=params,
+                timeout=settings.REQUEST_TIMEOUT
+            )
 
-            if response.status_code == 200:
-                logger.info(f"Weather data fetched for {city}")
-                return response.json()
+            # HTTP-level failure
+            if response.status_code != 200:
+                raise RuntimeError(
+                    f"HTTP {response.status_code}: {response.text}"
+                )
 
+            data = response.json()
+
+            # Data integrity check (API sometimes returns garbage)
+            if "main" not in data or "temp" not in data["main"]:
+                raise ValueError("Malformed API response")
+
+            logger.info(f"Weather data fetched for {city}")
+            return data
+
+        except Exception as e:
             logger.warning(
-                f"Attempt {attempt}/{retries} failed for {city} "
-                f"(status {response.status_code})"
+                f"API attempt {attempt}/{settings.API_RETRIES} failed for {city}: {e}"
             )
 
-        except requests.RequestException as e:
-            logger.error(
-                f"Attempt {attempt}/{retries} error for {city}: {e}"
-            )
+            # If last attempt → log as permanent failure
+            if attempt == settings.API_RETRIES:
+                logger.error(f"API permanently failed for {city}")
+                return None
 
-        if attempt < retries:
-            time.sleep(delay)
-
-    logger.error(f"All retry attempts failed for {city}")
-    return None
+            # Exponential backoff: 2s → 4s → 8s
+            time.sleep(2 ** attempt)

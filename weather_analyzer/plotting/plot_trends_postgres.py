@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from weather_analyzer.logger import get_logger
 from dotenv import load_dotenv
+from weather_analyzer.config.settings import settings
 import os
 
 logger = get_logger(__name__)
@@ -11,14 +12,13 @@ logger = get_logger(__name__)
 # ----------------------
 # PostgreSQL connection
 # ----------------------
-load_dotenv()  # loads variables from .env
 
 DB_CONFIG = {
-    "host": os.getenv("DB_HOST"),
-    "port": int(os.getenv("DB_PORT", 5432)),
-    "dbname": os.getenv("DB_NAME"),
-    "user": os.getenv("DB_USER"),
-    "password": os.getenv("DB_PASSWORD")
+    "host": settings.DB_HOST,
+    "port": settings.DB_PORT,
+    "dbname": settings.DB_NAME,
+    "user": settings.DB_USER,
+    "password": settings.DB_PASSWORD
 }
 
 

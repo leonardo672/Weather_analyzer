@@ -11,13 +11,14 @@ from weather_analyzer.plotting.plot_trends_postgres import (
     plot_temperature_trends
 )
 from weather_analyzer.logger import get_logger
+from weather_analyzer.config.settings import settings
 
 logger = get_logger(__name__)
 
 # Ensure plots folder exists
 Path("plots").mkdir(parents=True, exist_ok=True)
 
-CITIES = ["Stockholm", "London", "New York"]
+CITIES = settings.CITIES
 
 
 def job():
