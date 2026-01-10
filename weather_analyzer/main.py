@@ -4,6 +4,7 @@ from weather_analyzer.process_data import process_weather_data
 from weather_analyzer.utils import save_json_history
 from weather_analyzer.db.insert_weather import insert_weather_records
 from weather_analyzer.logger import get_logger
+from weather_analyzer.config.settings import settings
 
 logger = get_logger(__name__)
 
@@ -16,14 +17,13 @@ def parse_args():
     parser.add_argument(
         "--cities",
         nargs="+",
-        required=True,
-        help="List of cities to fetch weather for"
+        help="List of cities to fetch weather for (overrides default)"
     )
 
     parser.add_argument(
         "--raw-output",
-        default="data/history/raw",
-        help="Folder path to raw JSON output files (optional archive)"
+        default=None,
+        help="Folder path to raw JSON output files"
     )
 
     return parser.parse_args()
@@ -32,44 +32,61 @@ def parse_args():
 def main(cities=None, raw_output=None):
     """
     Main weather data pipeline.
-    Can be called from CLI or programmatically (scheduler).
+    Safe, fault-tolerant, production-ready.
     """
+
+    # If called via CLI (python -m), parse arguments
     if cities is None:
         args = parse_args()
         cities = args.cities
         raw_output = args.raw_output
-    else:
-        raw_output = raw_output or "data/history/raw"
 
-    logger.info("Weather pipeline started")
+    # Apply config defaults
+    cities = cities or settings.CITIES
+    raw_output = raw_output or "data/history/raw"
+
+    logger.info(f"Weather pipeline started for cities: {cities}")
 
     raw_weather_data = []
 
     for city in cities:
-        logger.info(f"Fetching weather for {city}")
-        data = fetch_weather(city)
-        if data:
-            raw_weather_data.append(data)
-        else:
-            logger.warning(f"No data received for {city}")
+        try:
+            logger.info(f"Fetching weather for {city}")
+            data = fetch_weather(city)
+
+            if data:
+                raw_weather_data.append(data)
+            else:
+                logger.warning(f"No data returned for {city}")
+
+        except Exception as e:
+            logger.error(f"Fatal error while processing {city}: {e}")
 
     if not raw_weather_data:
-        logger.warning("No weather data fetched — pipeline stopped")
+        logger.critical("All cities failed — pipeline aborted")
         return
 
-    # Optional: save raw JSON snapshot (history / debugging)
-    raw_file = save_json_history(raw_weather_data, raw_output)
-    logger.info(f"Raw JSON snapshot saved: {raw_file}")
+    try:
+        raw_file = save_json_history(raw_weather_data, raw_output)
+        logger.info(f"Raw JSON snapshot saved: {raw_file}")
+    except Exception as e:
+        logger.warning(f"Failed to save raw JSON history: {e}")
 
-    # Process API data
-    processed_data = process_weather_data(raw_weather_data)
+    try:
+        processed_data = process_weather_data(raw_weather_data)
+    except Exception as e:
+        logger.critical(f"Data processing failed: {e}")
+        return
 
-    # Insert directly into PostgreSQL
-    inserted = insert_weather_records(processed_data)
-    logger.info(f"{inserted} records inserted into PostgreSQL")
+    try:
+        inserted = insert_weather_records(processed_data)
+        logger.info(f"{inserted} records inserted into PostgreSQL")
+    except Exception as e:
+        logger.critical(f"Database insertion failed: {e}")
 
-    logger.info("Weather pipeline completed successfully")
+    logger.info("Weather pipeline completed")
 
 
 if __name__ == "__main__":
     main()
+
