@@ -15,7 +15,7 @@ class JsonFormatter(logging.Formatter):
         }
         if record.exc_info:
             log_record["exception"] = self.formatException(record.exc_info)
-        return json.dumps(log_record)
+        return json.dumps(log_record) # converts the structured log data into a JSON string
 
 def get_logger(name: str) -> logging.Logger:
     """

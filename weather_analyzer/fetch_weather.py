@@ -54,3 +54,5 @@ def fetch_weather(city: str) -> dict | None:
 
             # Exponential backoff: 2s → 4s → 8s
             time.sleep(2 ** attempt)
+            return None
+    return None
