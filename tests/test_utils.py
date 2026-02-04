@@ -1,13 +1,15 @@
 import json
 from pathlib import Path
-from weather_analyzer.utils import save_json
+from weather_analyzer.utils import save_json_history
 
 
 def test_save_json_creates_file(tmp_path):
     data = {"city": "London"}
-    file_path = tmp_path / "test.json"
 
-    save_json(data, file_path)
+    # pass a FOLDER, not a file
+    folder = tmp_path / "history"
+
+    file_path = save_json_history(data, folder)
 
     assert file_path.exists()
 

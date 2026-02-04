@@ -1,0 +1,4 @@
+pytest>=9.0.2
+pytest-cov
+iniconfig==2.3.0
+pluggy==1.6.0

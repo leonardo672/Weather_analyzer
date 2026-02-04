@@ -63,7 +63,7 @@ def job():
         logger.exception("Scheduled job failed")
 
 
-schedule.every().day.at("05:05").do(job)
+schedule.every().day.at("21:32").do(job)
 # schedule.every(10).minutes.do(job)
 
 logger.info("Scheduler started. Waiting for jobs...")
