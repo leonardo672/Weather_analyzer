@@ -17,4 +17,4 @@ COPY . .
 # EXPOSE 8000
 
 # Set entrypoint to scheduler (default behavior)
-CMD ["python", "scheduler.py"]
+CMD ["python", "-m", "weather_analyzer.scheduler"]

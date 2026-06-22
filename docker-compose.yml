@@ -24,7 +24,7 @@ services:
       DB_PASSWORD: pass
     volumes:
       - .:/app
-    command: python scheduler.py
+    command: python -m weather_analyzer.scheduler
 
 volumes:
   postgres_data:
